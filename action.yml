@@ -117,7 +117,7 @@ runs:
       repository: ${{ github.repository_owner }}/${{ inputs.git_ops_name }}
       ref: ${{ inputs.branch }}
         # 다른 저장소에 push 하려면 Personal Access Token이 필요.
-      token: ${{ inputs.action_token }}
+      token: ${{ inputs.gitops_action_token }}
       path: ${{ inputs.git_ops_name }}
         
   # 새 이미지 버전으로 파일 수정
