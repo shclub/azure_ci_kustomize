@@ -1,6 +1,6 @@
 name: CI with GitOps-Kustomize
 description: CI with Gitops-Kustomize
-inputs:
+#inputs:
 #  env:
 #    description: "environment"     
 #    required: true
