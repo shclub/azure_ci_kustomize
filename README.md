@@ -1,1 +1,1 @@
-# docker_ci
+# Azure CI with Kustomize
