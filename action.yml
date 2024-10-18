@@ -125,7 +125,7 @@ runs:
     shell: bash
     run: |
       pwd
-      cd ${{ inputs.git_ops_name }}/${{ inputs._git_ops_dir }}
+      cd ${{ inputs.git_ops_name }}/${{ inputs.git_ops_dir }}
       kustomize edit set image ${{ inputs.acr_url }}/${{ steps.meta.outputs.tags }}
       cat kustomization.yaml
            
