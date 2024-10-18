@@ -18,7 +18,7 @@ inputs:
   gitops_action_token:  
     default: ''  
   git_ops_dir:  
-    default: '' # charts/${{ github.event.repository.name }}     
+    default: charts/${{ github.event.repository.name }}     
   security:
     description: |
       Run trivy.
@@ -34,11 +34,11 @@ inputs:
   user_email:
     description: |
       User email.
-    default: ''        
+    default: ${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com        
   user_name:
     description: |
       User Name.
-    default: ''       
+    default: ${{ github.actor }}       
   platforms:
     description: |
       Platform.
@@ -135,8 +135,8 @@ runs:
     run: |
       cd ${{ inputs.git_ops_name }}/${{ inputs.git_ops_dir }}
       git checkout HEAD
-      git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-      git config --global user.name "${{ github.actor }}"
+      git config --global user.email "${{ inputs.user_email }}"
+      git config --global user.name "${{ inputs.user_name }}"
       git commit -am 'update image tag  ${{ env.NOW }} from Github Action'
       cat kustomization.yaml
       git push origin HEAD
