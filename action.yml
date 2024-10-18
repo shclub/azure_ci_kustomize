@@ -1,34 +1,24 @@
 name: CI with GitOps-Kustomize
 description: CI with Gitops-Kustomize
-#inputs:
-#  env:
-#    description: "environment"     
-#    required: true
-#    default: "prd"    
-#  tag:
-#    description: "Docker TAG"
-#    required: true
-#    default: "main"
-    
 inputs:
-  envronment:
-    default: "prd"
+  environment:
+    default: 'prd'
   branch:
-    default: "main"
+    default: 'main'
   tag:
-    default: ""
+    default: ''
   acr_url:  
-    default: ""
+    default: ''
   acr_username:  
-    default: ""
+    default: ''
   acr_password:  
-    default: ""
+    default: ''
   git_ops_name:  
-    default: ""  
+    default: ''  
   gitops_action_token:  
-    default: ""  
+    default: ''  
   git_ops_dir:  
-    default: charts/${{ github.event.repository.name }}     
+    default: '' # charts/${{ github.event.repository.name }}     
   security:
     description: |
       Run trivy.
@@ -40,29 +30,19 @@ inputs:
   observ_host:
     description: |
       Monitoring System Hostname or IP.
-    default: ""    
+    default: ''    
   user_email:
     description: |
       User email.
-    default: ""        
+    default: ''        
   user_name:
     description: |
       User Name.
-    default: ""       
+    default: ''       
   platforms:
     description: |
       Platform.
-    default: "linux/amd64"           
-    
-#outputs:
-#  plus:
-#    value: ${{ steps.plus.outputs.result }}
-#  minus:
-#    value: ${{ steps.minus.outputs.result }}
-
-#env:
-#  GIT_OPS_NAME: vivaldi-ops
-#  OPS_DIR: charts/${{ github.event.repository.name }}
+    default: 'linux/amd64'           
 
 runs:
   using: "composite"
@@ -73,9 +53,9 @@ runs:
   - name: Log in to Docker Hub
     uses: azure/docker-login@v1
     with:
-      login-server: ${{ acr_url }} # ${{ secrets.AZURE_URL }}
-      username: ${{ acr_username }} # ${{ secrets.ACR_USERNAME }}
-      password: ${{ acr_password }} #${{ secrets.ACR_PASSWORD }}
+      login-server: ${{ inputs.acr_url }} # ${{ secrets.AZURE_URL }}
+      username: ${{ inputs.acr_username }} # ${{ secrets.ACR_USERNAME }}
+      password: ${{ inputs.acr_password }} #${{ secrets.ACR_PASSWORD }}
       
   - name: Setup timezone
     uses: zcong1993/setup-timezone@master
