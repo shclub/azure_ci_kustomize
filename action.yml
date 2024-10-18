@@ -93,7 +93,7 @@ runs:
 #      build-args: |
 #        WHATAP_HOST: ${{ secrets.WHATAP_HOST }}
 #      tags: ${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}
-      tags: ${{ inputs.acr_url }}
+      tags: ${{ inputs.acr_url }}/${{ steps.meta.outputs.tags }}
 
   - name: Run Trivy vulnerability scanner
     if: ${{ inputs.security == 'true' }}
