@@ -1,16 +1,58 @@
 name: CI with GitOps-Kustomize
 description: CI with Gitops-Kustomize
 inputs:
+#  env:
+#    description: "environment"     
+#    required: true
+#    default: "prd"    
+#  tag:
+#    description: "Docker TAG"
+#    required: true
+#    default: "main"
+    
+inputs:
   envronment:
     default: "prd"
   branch:
     default: "main"
-  acr:  
+  tag:
     default: ""
-  username:  
+  acr_url:  
     default: ""
-  password:  
+  acr_username:  
     default: ""
+  acr_password:  
+    default: ""
+  git_ops_name:  
+    default: ""  
+  gitops_action_token:  
+    default: ""  
+  git_ops_dir:  
+    default: charts/${{ github.event.repository.name }}     
+  security:
+    description: |
+      Run trivy.
+    default: false    
+  observability:
+    description: |
+      Select monitoring System.
+    default: false    
+  observ_host:
+    description: |
+      Monitoring System Hostname or IP.
+    default: ""    
+  user_email:
+    description: |
+      User email.
+    default: ""        
+  user_name:
+    description: |
+      User Name.
+    default: ""       
+  platforms:
+    description: |
+      Platform.
+    default: "linux/amd64"           
     
 #outputs:
 #  plus:
@@ -27,50 +69,60 @@ runs:
   steps:
   - name: Check out the repo
     uses: actions/checkout@v4
-      
+    
   - name: Log in to Docker Hub
     uses: azure/docker-login@v1
     with:
-      login-server: ${{ secrets.AZURE_URL }}
-      username: ${{ secrets.ACR_USERNAME }}
-      password: ${{ secrets.ACR_PASSWORD }}
+      login-server: ${{ acr_url }} # ${{ secrets.AZURE_URL }}
+      username: ${{ acr_username }} # ${{ secrets.ACR_USERNAME }}
+      password: ${{ acr_password }} #${{ secrets.ACR_PASSWORD }}
       
   - name: Setup timezone
     uses: zcong1993/setup-timezone@master
     with:
       timezone: Asia/Seoul
+
+#      shell: bash
+#      env:
+#        FLIT_USERNAME: __token__
+#        FLIT_PASSWORD: ${{ inputs.pypi_password }}      
         
   - name: set env  # TAG 를 현재 시간으로 설정
+    if: ${{ inputs.tag == '' }}
     run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      
+    if: ${{ inputs.tag != '' }}
+    run: echo "NOW=${{ inputs.tag }}" >> $GITHUB_ENV
+     
   - name: Extract metadata (tags, labels) for Docker
     id: meta
     uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
     with:
       images: ${{ github.repository }}
-      tags: ${{ env.NOW }} # ${{ github.event.inputs.name }}
+      tags: ${{ env.NOW }}
   
   - name: Build and Push to ACR
     uses: docker/build-push-action@v2
     with:
       context: .
       push: true
-      file: ./Dockerfile
-      platforms: linux/amd64
-      build-args: |
-        WHATAP_HOST: ${{ secrets.WHATAP_HOST }}
-      tags: ${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}
+#      file: ./Dockerfile
+      platforms: ${{ inputs.platforms }}  #linux/amd64
+#      build-args: |
+#        WHATAP_HOST: ${{ secrets.WHATAP_HOST }}
+#      tags: ${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}
+      tags: ${{ acr_url }}
 
   - name: Run Trivy vulnerability scanner
+    if: ${{ inputs.security == 'true' }}
     uses: aquasecurity/trivy-action@master
     with:
-      image-ref: "${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}"
+      image-ref: "${{ acr_url }}/${{ steps.meta.outputs.tags }}"
       format: "table"
       exit-code: "0"
       ignore-unfixed: true
       vuln-type: "os,library"
       severity: "CRITICAL,HIGH"
-        
+
     # kustomize 명령을 가져온다.
   - name: Setup Kustomize
     uses: imranismail/setup-kustomize@v1
@@ -79,27 +131,27 @@ runs:
     uses: actions/checkout@v2
     with:
       # kubernetes 설정정보 저장소
-      repository: ${{ github.repository_owner }}/${{ env.GIT_OPS_NAME }}
-      ref: master
+      repository: ${{ github.repository_owner }}/${{ inputs.git_ops_name }}
+      ref: ${{ inputs.branch }}
         # 다른 저장소에 push 하려면 Personal Access Token이 필요.
-      token: ${{ secrets.ACTION_TOKEN }} # ${{ secrets.GITHUB_TOKEN }} 
-      path: ${{ env.GIT_OPS_NAME }}
+      token: ${{ inputs.action_token }}
+      path: ${{ inputs.git_ops_name }}
         
   # 새 이미지 버전으로 파일 수정
   - name: Update Kubernetes resources
     run: |
       pwd
-      cd ${{ env.GIT_OPS_NAME }}/${{ env.OPS_DIR }}
-      kustomize edit set image ${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}
+      cd ${{ inputs.git_ops_name }}/${{ inputs._git_ops_dir }}
+      kustomize edit set image ${{ inputs.acr_url }}/${{ steps.meta.outputs.tags }}
       cat kustomization.yaml
            
   # 수정된 파일 commit & push
   - name: Commit minifest files
     run: |
-      cd ${{ env.GIT_OPS_NAME }}/${{ env.OPS_DIR }}
-      git checkout HEAD
-      git config --global user.email "seokhwan.lee@kt.com"
-      git config --global user.name "seokhwan.lee"
+      cd ${{ inputs.git_ops_name }}/${{ inputs.git_ops_dir }}
+      git checkout HEAD  user_email
+      git config --global user.email "${{ inputs.user_email }}"
+      git config --global user.name "${{ inputs.user_name }}"
       git commit -am 'update image tag  ${{ env.NOW }} from Github Action'
       cat kustomization.yaml
       git push origin HEAD
