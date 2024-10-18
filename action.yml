@@ -71,7 +71,8 @@ runs:
     if: ${{ inputs.tag == '' }}
     run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
     shell: bash
-    if: ${{ inputs.tag != '' }}
+    
+  - if: ${{ inputs.tag != '' }}
     run: echo "NOW=${{ inputs.tag }}" >> $GITHUB_ENV
     shell: bash
  
@@ -92,13 +93,13 @@ runs:
 #      build-args: |
 #        WHATAP_HOST: ${{ secrets.WHATAP_HOST }}
 #      tags: ${{ secrets.AZURE_URL }}/${{ steps.meta.outputs.tags }}
-      tags: ${{ acr_url }}
+      tags: ${{ inputs.acr_url }}
 
   - name: Run Trivy vulnerability scanner
     if: ${{ inputs.security == 'true' }}
     uses: aquasecurity/trivy-action@master
     with:
-      image-ref: "${{ acr_url }}/${{ steps.meta.outputs.tags }}"
+      image-ref: "${{ inputs.acr_url }}/${{ steps.meta.outputs.tags }}"
       format: "table"
       exit-code: "0"
       ignore-unfixed: true
