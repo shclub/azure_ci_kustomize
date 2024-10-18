@@ -134,7 +134,7 @@ runs:
     shell: bash
     run: |
       cd ${{ inputs.git_ops_name }}/${{ inputs.git_ops_dir }}
-      git checkout HEAD  user_email
+      git checkout HEAD
       git config --global user.email "${{ inputs.user_email }}"
       git config --global user.name "${{ inputs.user_name }}"
       git commit -am 'update image tag  ${{ env.NOW }} from Github Action'
