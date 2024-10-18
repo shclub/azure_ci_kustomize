@@ -1,5 +1,5 @@
-name: CI with GitOps-Kustomize
-description: CI with Gitops-Kustomize
+name: 'CI with GitOps-Kustomize'
+description: 'CI with Gitops-Kustomize'
 inputs:
   environment:
     default: 'prd'
@@ -70,9 +70,11 @@ runs:
   - name: set env  # TAG 를 현재 시간으로 설정
     if: ${{ inputs.tag == '' }}
     run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+    shell: bash
     if: ${{ inputs.tag != '' }}
     run: echo "NOW=${{ inputs.tag }}" >> $GITHUB_ENV
-     
+    shell: bash
+ 
   - name: Extract metadata (tags, labels) for Docker
     id: meta
     uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
@@ -119,6 +121,7 @@ runs:
         
   # 새 이미지 버전으로 파일 수정
   - name: Update Kubernetes resources
+    shell: bash
     run: |
       pwd
       cd ${{ inputs.git_ops_name }}/${{ inputs._git_ops_dir }}
@@ -127,6 +130,7 @@ runs:
            
   # 수정된 파일 commit & push
   - name: Commit minifest files
+    shell: bash
     run: |
       cd ${{ inputs.git_ops_name }}/${{ inputs.git_ops_dir }}
       git checkout HEAD  user_email
