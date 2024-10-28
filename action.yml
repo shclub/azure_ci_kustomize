@@ -1,5 +1,5 @@
-name: 'CI with GitOps-Kustomize'
-description: 'CI with Gitops-Kustomize'
+name: 'Azure CI with GitOps-Kustomize'
+description: 'Azure CI with Gitops-Kustomize'
 inputs:
   environment:
     default: 'prd'
